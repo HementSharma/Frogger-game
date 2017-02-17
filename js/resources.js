@@ -67,6 +67,7 @@
              */
             resourceCache[url] = false;
             img.src = url;
+            console.log(url);
         }
     }
 
@@ -109,3 +110,7 @@
         isReady: isReady
     };
 })();
+
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}

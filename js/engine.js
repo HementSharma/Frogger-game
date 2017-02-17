@@ -23,7 +23,8 @@ var Engine = (function(global) {
         win = global.window,
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
-        lastTime;
+        lastTime,
+        collisionDetected=false;
 
     canvas.width = 505;
     canvas.height = 606;
@@ -39,6 +40,7 @@ var Engine = (function(global) {
          * would be the same for everyone (regardless of how fast their
          * computer is) - hurray time!
          */
+        var myAnimantionRequest;
         var now = Date.now(),
             dt = (now - lastTime) / 1000.0;
 
@@ -56,9 +58,24 @@ var Engine = (function(global) {
         /* Use the browser's requestAnimationFrame function to call this
          * function again as soon as the browser is able to draw another frame.
          */
-        win.requestAnimationFrame(main);
+        if(collisionDetected){
+            win.cancelAnimationFrame(myAnimantionRequest);
+            restGameState();
+            init();
+        }
+        else{
+            myAnimantionRequest=win.requestAnimationFrame(main);
+        }
     }
 
+    function restGameState() {
+        playersSelection.selectedPlayer = false;
+        collisionDetected = false;
+        player.resetState();
+        allEnemies.forEach(function (enemy) {
+            enemy.resetState();
+        });
+    }
     /* This function does some initial setup that should only occur once,
      * particularly setting the lastTime variable that is required for the
      * game loop.
@@ -66,7 +83,8 @@ var Engine = (function(global) {
     function init() {
         reset();
         lastTime = Date.now();
-        main();
+        //uncoment below line to start main game loop
+        //main();
     }
 
     /* This function is called by main (our game loop) and itself calls all
@@ -80,9 +98,23 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        checkCollisions();
     }
 
+    function checkCollisions() {
+        allEnemies.forEach(function (enemy) {
+           var result = __checkCollision(enemy.gelLocation(), player.gelLocation());
+           if(result){
+               collisionDetected = true;
+           }
+        });
+    }
+    function __checkCollision(enemyLocation,playerLocation) {
+        if(playerLocation[1] == enemyLocation[1] && Math.ceil(enemyLocation[0]/101) == playerLocation[0]){
+            return true;
+        }
+        else return false;
+    }
     /* This is called by the update function and loops through all of the
      * objects within your allEnemies array as defined in app.js and calls
      * their update() methods. It will then call the update function for your
@@ -104,6 +136,12 @@ var Engine = (function(global) {
      * they are just drawing the entire screen over and over.
      */
     function render() {
+        //below function will render the game background
+        __render();
+        //this will render enemy and player Objects
+        renderEntities();
+    }
+    function __render() {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
@@ -135,10 +173,7 @@ var Engine = (function(global) {
                 ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
             }
         }
-
-        renderEntities();
     }
-
     /* This function is called by the render function and is called on each game
      * tick. Its purpose is to then call the render functions you have defined
      * on your enemy and player entities within app.js
@@ -159,7 +194,30 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // noop
+        //Create player selection screen
+
+        if(!drawPlayers()){
+            var myReq = win.requestAnimationFrame(reset);
+        }
+        else{
+            win.cancelAnimationFrame(myReq);
+            main();
+        }
+
+    }
+
+    function drawPlayers() {
+        __render();
+        ctx.font="50px Verdana";
+        ctx.fillStyle = 'black';
+        ctx.fillText("choose your player",0, 40);
+        if(!playersSelection.selectedPlayer){
+            playersSelection.render();
+            return false;
+        }
+        else{
+            return true;
+        }
     }
 
     /* Go ahead and load all of the images we know we're going to need to
@@ -171,7 +229,16 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/char-pink-girl.png',
+        'images/char-boy.png',
+        'images/char-cat-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-pink-girl.png',
+        'images/char-princess-girl.png',
+        'images/Selector.png',
+        'images/Heart.png',
+        'images/enemy-bug.png'
     ]);
     Resources.onReady(init);
 
@@ -180,4 +247,5 @@ var Engine = (function(global) {
      * from within their app.js files.
      */
     global.ctx = ctx;
+
 })(this);
