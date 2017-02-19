@@ -10,7 +10,7 @@ In this game the goal is simple, get the hero character to water without getting
 
 Movement and Controls
 -------------------------------
-Use enter key to select Player character at start of the game and use main up/right/left/down arrow keys on their keyboard to control character movements.
+Use enter key to select Player character at start of the game and use main up/right/left/down arrow keys on to control character movements.
 
 Installation
 -------------------------------
