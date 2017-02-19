@@ -10,8 +10,11 @@ var Enemy = function(x,y) {
     this.y=y;
 };
 Enemy.prototype.resetState = function () {
+    // Get Random starting pint for an enemy
     this.x=getRandomArbitrary(-400,1);
+
 };
+
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
@@ -19,14 +22,18 @@ Enemy.prototype.update = function(dt) {
     // which will ensure the game runs at the same speed for
     // all computers.
     if(this.x>505){
+      //Reset state once player goes off Screen
         this.resetState();
     }
+    //Enemy speed based on level
     this.x +=20*dt*getRandomArbitrary(player.getlevel() -10, player.getlevel());
-
 };
+
+//Return X and y Coordinates for Enemy
 Enemy.prototype.gelLocation = function () {
     return [this.x,this.y];
 }
+
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y*70);
@@ -40,6 +47,8 @@ Enemy.prototype.render = function() {
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
+
+//PlayedSuper class is for player Selection screen
 var PlayersSuper  = function (images) {
   this.x = 1;
   this.y = 0;
@@ -47,59 +56,92 @@ var PlayersSuper  = function (images) {
   this.selectedPlayer=false;
 };
 
-
+//Render Selection screen
 PlayersSuper.prototype.render = function () {
     if(this.sprite instanceof Array) {
+        //render intial screen
         var pos=0;
+        //Draw Each player on Selection screen
         this.sprite.forEach(function (image) {
             ctx.drawImage(Resources.get(image), 10 ,pos);
             pos +=101;
         });
-        ctx.drawImage(Resources.get('images/Heart.png'), 101 ,this.y*101);
+        //Draw Selection heart
+            ctx.drawImage(Resources.get('images/Heart.png'), 101 ,this.y*101);
+    }
 
-    }
-    else{
-        ctx.font="30px Verdana";
-        ctx.fillStyle = 'white';
-        //ctx.fillText("choose your player",0, 40);
-        ctx.fillRect(0,0,500,50);
-        ctx.fillStyle = 'black';
-        ctx.fillText("Level :-" + this.level,0,40);
-        ctx.drawImage(Resources.get(this.sprite), this.x*101 , this.y*80);
-    }
 };
 
 PlayersSuper.prototype.handleInput = function (code) {
+    //devided whole y section in 5 blocks ranging 0 to 4
+    // Updating Selector position based on y location
     if(code == 'up'  && this.y >0){
         this.y--;
     }
-    else if(code == 'down'&& this.y<5){
+    else if(code == 'down'&& this.y<4){
         this.y++;
     }
     else if(code == 'enter'){
+        //Selecting played logic
         this.selectedPlayer = this.sprite[this.y];
         player.updateCharacter(this.sprite[this.y]);
     }
 };
+
+//Player class if for Player
 var Player = function (playerCharacter) {
     PlayersSuper.call(this,playerCharacter);
+    //Initializing current location
     this.x=2;
     this.y=4;
+    //life will be used for player lifelines
+    this.life=3;
 };
+
 Player.prototype = Object.create(PlayersSuper.prototype);
+
 Player.prototype.constructor = Player;
+
 Player.prototype.updateCharacter = function (character) {
     this.sprite=character;
     this.level = 10;
-}
+};
+
 Player.prototype.gelLocation = function () {
     return [this.x,this.y];
-}
+};
+
 Player.prototype.resetState = function () {
     this.x=2;
     this.y=4;
+};
+
+
+Player.prototype.gotLife = function(){
+    this.life =3;
+};
+
+Player.prototype.lostLife= function(){
+    this.life--;
+};
+
+Player.prototype.getLifeCount = function(){
+    return this.life;
+};
+
+Player.prototype.render = function () {
+    ctx.font="30px Verdana";
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0,0,500,50);
+    ctx.fillStyle = 'black';
+    ctx.fillText("Level :-" + (this.level-9),0,40);
+    ctx.drawImage(Resources.get('images/Star.png'), 404,-32,100,100);
+    ctx.fillText(this.getLifeCount(),445,40);
+    ctx.drawImage(Resources.get(this.sprite), this.x*101 , this.y*80);
 }
+
 Player.prototype.handleInput = function (code) {
+    //reseting player to its original state and updatin game lavel once player reaches the water
     if(code == 'up' && this.y >0){
         if(this.y==1){
           this.y=4;
@@ -120,9 +162,11 @@ Player.prototype.handleInput = function (code) {
         this.x++;
     }
 }
+
 Player.prototype.update =function (dt) {
 
 };
+
 Player.prototype.getlevel = function () {
   return this.level;
 };

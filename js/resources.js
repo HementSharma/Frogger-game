@@ -67,7 +67,6 @@
              */
             resourceCache[url] = false;
             img.src = url;
-            console.log(url);
         }
     }
 

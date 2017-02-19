@@ -59,9 +59,21 @@ var Engine = (function(global) {
          * function again as soon as the browser is able to draw another frame.
          */
         if(collisionDetected){
-            win.cancelAnimationFrame(myAnimantionRequest);
-            restGameState();
-            init();
+            //reset game if player lost all lifes
+            if(player.getLifeCount()>0){
+                //reduce player life
+                player.lostLife();
+                collisionDetected=false;
+                //reset player location
+                player.resetState();
+                myAnimantionRequest=win.requestAnimationFrame(main);
+            }
+            else{
+                //reset game state if player lost all lifes
+                win.cancelAnimationFrame(myAnimantionRequest);
+                restGameState();
+                init();
+            }
         }
         else{
             myAnimantionRequest=win.requestAnimationFrame(main);
@@ -72,6 +84,7 @@ var Engine = (function(global) {
         playersSelection.selectedPlayer = false;
         collisionDetected = false;
         player.resetState();
+        player.gotLife();
         allEnemies.forEach(function (enemy) {
             enemy.resetState();
         });
@@ -101,6 +114,7 @@ var Engine = (function(global) {
         checkCollisions();
     }
 
+    //Check collision between enemy and player
     function checkCollisions() {
         allEnemies.forEach(function (enemy) {
            var result = __checkCollision(enemy.gelLocation(), player.gelLocation());
@@ -110,8 +124,13 @@ var Engine = (function(global) {
         });
     }
     function __checkCollision(enemyLocation,playerLocation) {
-        if(playerLocation[1] == enemyLocation[1] && Math.ceil(enemyLocation[0]/101) == playerLocation[0]){
-            return true;
+        if(playerLocation[1] == enemyLocation[1]){
+            if( Math.ceil(enemyLocation[0]/101) == playerLocation[0]){
+                return true;
+            }
+            else if( Math.floor(enemyLocation[0]/90) == playerLocation[0]){
+                return true;
+            }
         }
         else return false;
     }
@@ -209,6 +228,8 @@ var Engine = (function(global) {
     function drawPlayers() {
         __render();
         ctx.font="50px Verdana";
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0,0,500,50);
         ctx.fillStyle = 'black';
         ctx.fillText("choose your player",0, 40);
         if(!playersSelection.selectedPlayer){
@@ -238,7 +259,8 @@ var Engine = (function(global) {
         'images/char-princess-girl.png',
         'images/Selector.png',
         'images/Heart.png',
-        'images/enemy-bug.png'
+        'images/enemy-bug.png',
+        'images/Star.png'
     ]);
     Resources.onReady(init);
 
